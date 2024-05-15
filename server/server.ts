@@ -13,7 +13,7 @@ const app = express();
 const server = http.createServer(app);
 const socket = new WebSocketServer({ server });
 
-const BASE_URL = "http://example.com/game/";
+const BASE_URL = "http://localhost:8080/mdeal/";
 const PORT = process.env.PORT || 3000;
 let MAX_PLAYERS = 2;
 let MIN_PLAYERS = 2;
@@ -105,6 +105,7 @@ const createGame = async (
       JSON.stringify({
         type: "gameCreated",
         gameUrl: `${BASE_URL}${gameId}`,
+        host: data.playerName,
       })
     );
     return gameId;
@@ -136,7 +137,7 @@ const joinGame = async (
     socket.send(
       JSON.stringify({
         type: "playerJoined",
-        data: { player: data.playerName },
+        data: { player: data.playerName, host: gameToJoin.game.host },
       })
     );
   } else {
