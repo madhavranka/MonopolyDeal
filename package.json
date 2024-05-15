@@ -5,7 +5,8 @@
   "main": "main.ts",
   "scripts": {
     "test": "jest",
-    "build": "tsc"
+    "build": "tsc --outDir dist",
+    "dev": "node dist/server/server.js"
   },
   "repository": {
     "type": "git",

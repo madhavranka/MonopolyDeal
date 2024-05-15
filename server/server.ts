@@ -3,17 +3,17 @@ const http = require("http");
 const express = require("express");
 import { WebSocket, WebSocketServer } from "ws";
 import { generateGameId, notifyAllPlayers } from "./utils";
-import { game } from "../game/initiate";
 import { startTheGame } from "../game/main";
 import { changeTurn, play } from "../game/play";
 import { Mutex } from "async-mutex";
 import { Game } from "./types";
+import { createNewGameInstance } from "../game/initiate";
 
 const app = express();
 const server = http.createServer(app);
 const socket = new WebSocketServer({ server });
 
-const BASE_URL = "http://example.com/game/";
+const BASE_URL = "http://localhost:8080/mdeal/";
 const PORT = process.env.PORT || 3000;
 let MAX_PLAYERS = 2;
 let MIN_PLAYERS = 2;
@@ -48,17 +48,18 @@ socket.on("connection", async (socket: WebSocket) => {
 const handleMessage = async (socket: WebSocket, message: string | Buffer) => {
   try {
     const data = JSON.parse(message.toString());
+    let gameId: string = data.gameId;
 
     // Check the message type
     switch (data.type) {
       case "createGame":
-        createGame(socket, data);
+        gameId = await createGame(socket, data);
         break;
       case "joinGame":
-        joinGame(socket, data);
+        await joinGame(socket, data);
         break;
       case "startGame":
-        startGame(socket, data);
+        await startGame(socket, data);
         break;
 
       case "playTurn":
@@ -75,10 +76,10 @@ const handleMessage = async (socket: WebSocket, message: string | Buffer) => {
 
       // Handle other message types as needed
     }
+    console.log(JSON.stringify(games[gameId].game));
   } catch (error) {
     console.log(error);
   }
-  //   console.log(JSON.stringify(game));
   // Broadcast the message to all connected clients (excluding the sender)
   // socket.send('message', data);
 };
@@ -86,7 +87,7 @@ const handleMessage = async (socket: WebSocket, message: string | Buffer) => {
 const createGame = async (
   socket: WebSocket,
   data: { playerName: string; gameId: string | undefined }
-) => {
+): Promise<string> => {
   // Create a new game and assign the host
   if (data.playerName) {
     const gameId =
@@ -96,15 +97,18 @@ const createGame = async (
       players: [socket],
       id: gameId,
     };
-    game.playerNames.push(data.playerName);
-    game.host = data.playerName;
+    games[gameId].game = createNewGameInstance();
+    games[gameId].game.playerNames = [data.playerName];
+    games[gameId].game.host = data.playerName;
     // Send the game URL to the host
     socket.send(
       JSON.stringify({
         type: "gameCreated",
         gameUrl: `${BASE_URL}${gameId}`,
+        host: data.playerName,
       })
     );
+    return gameId;
   } else {
     socket.send(JSON.stringify({ type: "missingHostName" }));
   }
@@ -122,7 +126,7 @@ const joinGame = async (
   } else if (gameToJoin && gameToJoin.host !== socket && data.playerName) {
     // Add the player to the game if it exists and it's not the host
     gameToJoin.players.push(socket);
-    game.playerNames.push(data.playerName);
+    gameToJoin.game.playerNames.push(data.playerName);
     // Send a message to the host to indicate a new player joined
     gameToJoin.host.send(
       JSON.stringify({
@@ -133,7 +137,7 @@ const joinGame = async (
     socket.send(
       JSON.stringify({
         type: "playerJoined",
-        data: { player: data.playerName },
+        data: { player: data.playerName, host: gameToJoin.game.host },
       })
     );
   } else {
@@ -183,11 +187,11 @@ const pass = async (socket: WebSocket, data: { gameId: string }) => {
   const gameId = data.gameId;
   const currentGame: Game | undefined = games[gameId];
   if (currentGame) {
-    const turnChanged: boolean = changeTurn();
+    const turnChanged: boolean = changeTurn(currentGame.game);
     if (turnChanged) {
       notifyAllPlayers(currentGame, {
         type: "turnChange",
-        data: { currentPlayer: game.currentPlayer },
+        data: { currentPlayer: currentGame.game["currentPlayer"] },
       });
     } else {
       socket.send(JSON.stringify({ type: "invalidPass" }));
