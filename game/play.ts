@@ -4,6 +4,7 @@ import { notifyAllPlayers, notifyOnePlayer } from "../server/utils";
 import { convertDiscardedPileToDrawPile } from "./initiate";
 import { message, sanitizeMessage } from "./message";
 import { Cash, GamePlay, Property } from "./types";
+import { createCardPlayedPayload } from "./utils";
 
 export const play = async (currentGame: Game, turnData) => {
   if (turnData.action === "discard") {
@@ -90,7 +91,13 @@ const playGame = (turnData, currentGame) => {
         console.log(turnData);
         playTurn(turnData, currentGame);
         game.lastCard = turnData.card;
-        notifyAllPlayers(currentGame, { type: "cardPlayed", turnData });
+        for (let i = 0; i < game.playerNames.length; i++) {
+          notifyOnePlayer(
+            currentGame,
+            createCardPlayedPayload(game, i, "cardPlayed"),
+            i
+          );
+        }
       }
     }
   }

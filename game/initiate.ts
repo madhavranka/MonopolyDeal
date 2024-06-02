@@ -1,6 +1,7 @@
 import { Game } from "../server/types";
 import { notifyOnePlayer } from "../server/utils";
 import { CashPile, GamePlay, Properties, Property } from "./types";
+import { createCardPlayedPayload } from "./utils";
 
 export const createNewGameInstance = (): GamePlay => {
   return {
@@ -195,28 +196,10 @@ const createPropertyPile = (): Properties => {
 };
 
 export const notifyTheStart = (currentGame: Game) => {
-  // let allProperties: Properties[] = [];
-  // let allCash: CashPile[] = [];
-  // for (let i = 0; i < currentGame.game.playerNames.length; i++) {
-  //   allProperties[i] = currentGame.game.users[i].properties;
-  //   allCash[i] = currentGame.game.users[i].cashPile;
-  // }
   for (let i = 0; i < currentGame.game.playerNames.length; i++) {
     notifyOnePlayer(
       currentGame,
-      {
-        type: "gameStarted",
-        data: {
-          // cards: currentGame.game.playerCards[i],
-          currentPlayer: currentGame.game.currentPlayer,
-          // properties: allProperties,
-          // cash: allCash,
-          playerId: i,
-          players: currentGame.game.users,
-          discardPile: currentGame.game.discardPile,
-          // game: currentGame.game,
-        },
-      },
+      createCardPlayedPayload(currentGame.game, i, "gameStarted"),
       i
     );
   }
