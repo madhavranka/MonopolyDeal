@@ -1,0 +1,54 @@
+{
+    "rent": {
+        "twoColored": {
+            "darkBlueAndGreen": 2,
+            "lightGreenAndBlack": 2,
+            "lightBlueAndBrown": 2,
+            "orangeAndPink": 2,
+            "redAndYellow": 2
+        },
+        "multiColored": 3
+    },
+    "cash": {
+        "ten": 1,
+        "five": 2,
+        "four": 3,
+        "three": 3,
+        "two": 5,
+        "one": 6
+    },
+    "property": {
+        "darkBlue": 2,
+        "green": 3,
+        "red": 3,
+        "yellow": 3,
+        "orange": 3,
+        "pink": 3,
+        "black": 4,
+        "brown": 2,
+        "lightGreen": 2,
+        "lightBlue": 3
+    },
+    "wild": {
+        "multiColored": 2,
+        "darkBlueAndGreen": 1,
+        "lightBlueAndBrown": 1,
+        "orangeAndPink": 2,
+        "greenAndBlack": 1,
+        "lightBlueAndBlack": 1,
+        "redAndYellow": 2,
+        "lightGreenAndBlack": 1
+    },
+    "action": {
+        "dealBreaker": 2,
+        "justSayNo": 3,
+        "slyDeal": 3,
+        "forcedDeal": 4,
+        "debtCollector": 3,
+        "itsMyBirthday": 3,
+        "passGo": 10,
+        "house": 3,
+        "hotel": 3,
+        "doubleTheRent": 2
+    }
+}
